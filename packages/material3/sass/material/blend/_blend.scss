@@ -1,0 +1,27 @@
+@use 'sass:math';
+@use 'sass:map';
+
+@use '../htc/htc' as vp-htc;
+@use '../../helpers' as vp-util;
+
+
+/// @param designColor ARGB representation of an arbitrary color.
+/// @param sourceColor ARGB representation of the main theme color.
+/// @return The design color with a hue shifted towards the
+/// system's color, a slightly warmer/cooler variant of the design
+/// color's hue.
+@function harmonize($designColor, $sourceColor) {
+    $fromHct: vp-htc.from-int($designColor);
+    $toHct: vp-htc.from-int($sourceColor);
+    $fromHue: map.get($fromHct, internalHue);
+    $fromChroma: map.get($fromHct, internalChroma);
+    $fromTone: map.get($fromHct, internalTone);
+    $toHue: map.get($toHct, internalHue);
+
+    $differenceDegrees: vp-util.difference-degrees($fromHue, $toHue);
+    $rotationDegrees: math.min($differenceDegrees * 0.5, 15);
+    $outputHue: vp-util.sanitize-degrees-double($fromHue +
+    $rotationDegrees * vp-util.rotation-direction($fromHue, $toHue));
+
+    @return vp-htc.to-int(vp-htc.from($outputHue, $fromChroma, $fromTone));
+}

@@ -1,0 +1,186 @@
+@use 'sass:map';
+@use '../palettes' as vp-palette;
+
+
+/// Calculate a light-toned palette based on an ARGB color.
+/// @param $argb - The ARGB color value.
+/// @return - A light-toned palette.
+@function light($argb) {
+    @return light-from-core-palette(vp-palette.of($argb));
+}
+
+/// Calculate a dark-toned palette based on an ARGB color.
+/// @param $argb - The ARGB color value.
+/// @return - A dark-toned palette.
+@function dark($argb) {
+    @return dark-from-core-palette(vp-palette.of($argb));
+}
+
+/// Calculate a light-toned content palette based on an ARGB color.
+/// @param $argb - The ARGB color value.
+/// @return - A light-toned content palette.
+@function light-content($argb) {
+    @return light-from-core-palette(vp-palette.content-of($argb));
+}
+
+/// Calculate a dark-toned content palette based on an ARGB color.
+/// @param $argb - The ARGB color value.
+/// @return - A dark-toned content palette.
+@function dark-content($argb) {
+    @return dark-from-core-palette(vp-palette.content-of($argb));
+}
+
+/// Calculate a light-toned palette based on a core palette.
+/// @param $core - The core palette.
+/// @return - A light-toned palette.
+@function light-from-core-palette($core) {
+    $a1: map.get($core, a1);
+    $a2: map.get($core, a2);
+    $a3: map.get($core, a3);
+    $n1: map.get($core, n1);
+    $n2: map.get($core, n2);
+    $error: map.get($core, error);
+
+    $scheme: (
+        primary:   vp-palette.tone($a1, 40),
+        onPrimary: vp-palette.tone($a1, 100),
+        primaryContainer: vp-palette.tone($a1, 90),
+        onPrimaryContainer: vp-palette.tone($a1, 10),
+
+        primaryFixed: vp-palette.tone($a1, 90),
+        onPrimaryFixed: vp-palette.tone($a1, 10),
+        primaryFixedDim: vp-palette.tone($a1, 80),
+        onPrimaryFixedVariant: vp-palette.tone($a1, 30),
+
+
+        secondary: vp-palette.tone($a2, 40),
+        onSecondary: vp-palette.tone($a2, 100),
+        secondaryContainer: vp-palette.tone($a2, 90),
+        onSecondaryContainer: vp-palette.tone($a2, 10),
+
+        secondaryFixed: vp-palette.tone($a2, 90),
+        onSecondaryFixed: vp-palette.tone($a2, 10),
+        secondaryFixedDim: vp-palette.tone($a2, 80),
+        onSecondaryFixedVariant: vp-palette.tone($a2, 30),
+
+        tertiary: vp-palette.tone($a3, 40),
+        onTertiary: vp-palette.tone($a3, 100),
+        tertiaryContainer: vp-palette.tone($a3, 90),
+        onTertiaryContainer: vp-palette.tone($a3, 10),
+
+        tertiaryFixed: vp-palette.tone($a3, 90),
+        onTertiaryFixed: vp-palette.tone($a3, 10),
+        tertiaryFixedDim: vp-palette.tone($a3, 80),
+        onTertiaryFixedVariant: vp-palette.tone($a3, 30),
+
+        error: vp-palette.tone($error, 40),
+        onError: vp-palette.tone($error, 100),
+        errorContainer: vp-palette.tone($error, 90),
+        onErrorContainer: vp-palette.tone($error, 10),
+
+        background: vp-palette.tone($n1, 99),
+        onBackground: vp-palette.tone($n1, 10),
+
+        surfaceDim: vp-palette.tone($n1, 87),
+        surface: vp-palette.tone($n1, 98),
+        surfaceBright: vp-palette.tone($n1, 98),
+        surfaceContainerLowest: vp-palette.tone($n1, 100),
+        surfaceContainerLow: vp-palette.tone($n1, 96),
+        surfaceContainer: vp-palette.tone($n1, 94),
+        surfaceContainerHigh: vp-palette.tone($n1, 92),
+        surfaceContainerHighest: vp-palette.tone($n1, 90),
+
+        onSurface: vp-palette.tone($n1, 10),
+
+        surfaceVariant: vp-palette.tone($n2, 90),
+        onSurfaceVariant: vp-palette.tone($n2, 30),
+        outline: vp-palette.tone($n2, 50),
+        outlineVariant: vp-palette.tone($n2, 80),
+
+        shadow: vp-palette.tone($n1, 0),
+        scrim: vp-palette.tone($n1, 0),
+        inverseSurface: vp-palette.tone($n1, 20),
+        inverseOnSurface: vp-palette.tone($n1, 95),
+        inversePrimary:  vp-palette.tone($a1, 80)
+    );
+
+    @return $scheme;
+}
+
+/// Calculate a dark-toned palette based on a core palette.
+/// @param $core - The core palette.
+/// @return - A dark-toned palette.
+@function dark-from-core-palette($core) {
+    $a1: map.get($core, a1);
+    $a2: map.get($core, a2);
+    $a3: map.get($core, a3);
+    $n1: map.get($core, n1);
+    $n2: map.get($core, n2);
+    $error: map.get($core, error);
+
+    $scheme: (
+        primary:   vp-palette.tone($a1, 80),
+        onPrimary: vp-palette.tone($a1, 20),
+        primaryContainer: vp-palette.tone($a1, 30),
+        onPrimaryContainer: vp-palette.tone($a1, 90),
+
+        primaryFixed: vp-palette.tone($a1, 90),
+        onPrimaryFixed: vp-palette.tone($a1, 10),
+        primaryFixedDim: vp-palette.tone($a1, 80),
+        onPrimaryFixedVariant: vp-palette.tone($a1, 30),
+
+        secondary: vp-palette.tone($a2, 80),
+        onSecondary: vp-palette.tone($a2, 20),
+        secondaryContainer: vp-palette.tone($a2, 30),
+        onSecondaryContainer: vp-palette.tone($a2, 90),
+
+        secondaryFixed: vp-palette.tone($a2, 90),
+        onSecondaryFixed: vp-palette.tone($a2, 10),
+        secondaryFixedDim: vp-palette.tone($a2, 80),
+        onSecondaryFixedVariant: vp-palette.tone($a2, 30),
+
+        tertiary: vp-palette.tone($a3, 80),
+        onTertiary: vp-palette.tone($a3, 20),
+        tertiaryContainer: vp-palette.tone($a3, 30),
+        onTertiaryContainer: vp-palette.tone($a3, 90),
+
+        tertiaryFixed: vp-palette.tone($a3, 90),
+        onTertiaryFixed: vp-palette.tone($a3, 10),
+        tertiaryFixedDim: vp-palette.tone($a3, 80),
+        onTertiaryFixedVariant: vp-palette.tone($a3, 30),
+
+        error: vp-palette.tone($error, 80),
+        onError: vp-palette.tone($error, 20),
+        errorContainer: vp-palette.tone($error, 30),
+        onErrorContainer: vp-palette.tone($error, 80),
+        
+        background: vp-palette.tone($n1, 10),
+        onBackground: vp-palette.tone($n1, 90),
+        
+        surfaceDim: vp-palette.tone($n1, 6),
+        surface: vp-palette.tone($n1, 6),
+        surfaceBright: vp-palette.tone($n1, 24),
+        surfaceContainerLowest: vp-palette.tone($n1, 4),
+        surfaceContainerLow: vp-palette.tone($n1, 10),
+        surfaceContainer: vp-palette.tone($n1, 12),
+        surfaceContainerHigh: vp-palette.tone($n1, 17),
+        surfaceContainerHighest: vp-palette.tone($n1, 22),
+
+
+        onSurface: vp-palette.tone($n1, 90),
+        
+        surfaceVariant: vp-palette.tone($n2, 30),
+        onSurfaceVariant: vp-palette.tone($n2, 80),
+        outline: vp-palette.tone($n2, 60),
+        outlineVariant: vp-palette.tone($n2, 30),
+        
+
+        shadow: vp-palette.tone($n1, 0),
+        scrim: vp-palette.tone($n1, 0),
+        inverseSurface: vp-palette.tone($n1, 90),
+        inverseOnSurface: vp-palette.tone($n1, 20),
+        inversePrimary:  vp-palette.tone($a1, 40)
+    );
+
+    @return $scheme;
+}

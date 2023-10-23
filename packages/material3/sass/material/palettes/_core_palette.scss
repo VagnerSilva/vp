@@ -1,0 +1,117 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '../htc' as vp-htc;
+@use './tonal_palette' as vp-tone;
+
+/// This function calculates the core palette for a given ARGB color.
+/// @param $argb - The ARGB color value.
+/// @return - A map containing different core palette values for the given color.
+@function of($argb) {
+    @return core-palette($argb, false);
+}
+
+/// This function calculates the core palette for content based on a given ARGB color.
+/// @param $argb - The ARGB color value.
+/// @return - A map containing different core palette values for content based on the given color.
+@function content-of($argb) {
+    @return core-palette($argb, true);
+}
+
+/// This function creates a palette from a set of colors, with options for content or background.
+/// @param $colors - A map of colors, e.g., primary, secondary, tertiary, etc.
+/// @return - A map representing the generated palette.
+@function from-colors($colors) {
+    @return create-palette-from-colors(false, colors);
+}
+
+/// This function creates a palette for content from a set of colors.
+/// @param $colors - A map of colors, e.g., primary, secondary, tertiary, etc.
+/// @return - A map representing the generated content palette.
+@function content-from-colors($colors) {
+    @return create-palette-from-colors(true, colors);
+}
+
+/// This function generates a palette from a set of colors, allowing customization for content or background.
+/// @param $content - Boolean indicating if the palette is for content (true) or background (false).
+/// @param $colors - A map of colors, e.g., primary, secondary, tertiary, etc.
+/// @return - A map representing the generated palette.
+@function create-palette-from-colors($content, $colors) {
+    $primary: map.get($colors, primary);
+    $secondary: map.get($colors, secondary);
+    $tertiary: map.get($colors, tertiary);
+    $error: map.get($colors, error);
+    $neutral: map.get($colors, neutral);
+    $neutralVariant: map.get($colors, neutralVariant);
+
+    $palette: core-palette($primary, $content);
+
+    @if($secondary) {
+        $p: core-palette($secondary, $content);
+        $palette: map.set($palette, secondary, map.get($p, a1));
+    }
+
+    @if($tertiary) {
+        $p: core-palette($tertiary, $content);
+        $palette: map.set($palette, tertiary, map.get($p, a1));
+    }
+    
+    @if($error) {
+        $p: core-palette($error, $content);
+        $palette: map.set($palette, error, map.get($p, a1));
+    }
+
+    @if($neutral) {
+        $p: core-palette($neutral, $content);
+        $palette: map.set($palette, neutral, map.get($p, a1));
+    }
+
+    @if($neutralVariant) {
+        $p: core-palette($neutralVariant, $content);
+        $palette: map.set($palette, neutralVariant, map.get($p, a1));
+    }
+
+    @return $palette;
+}
+
+
+/// This function calculates the contrast palette for a given ARGB color.
+/// @param $argb - The ARGB color value.
+/// @param $isContent - Boolean indicating if it's for content (true) or background (false).
+/// @return - A map containing different contrast values for the given color.
+@function core-palette($argb, $isContent) {
+    $htc: vp-htc.from-int($argb);
+    $hue: map.get($htc, internalHue);
+
+    $chroma: map.get($htc, internalChroma);
+    $a1: 0;
+    $a2: 0;
+    $a3: 0;
+    $n1: 0;
+    $n2: 0;
+
+    @if($isContent) {
+        $a1: vp-tone.from-hue-and-chroma($hue, $chroma);
+        $a2: vp-tone.from-hue-and-chroma($hue, math.div($chroma, 3));
+        $a3: vp-tone.from-hue-and-chroma($hue + 60, math.div($chroma, 2));
+        $n1: vp-tone.from-hue-and-chroma($hue, math.min(math.div($chroma, 12), 4));
+        $n2: vp-tone.from-hue-and-chroma($hue, math.min(math.div($chroma, 6), 8));
+    }
+
+    @else {
+        $a1: vp-tone.from-hue-and-chroma($hue, math.max(48, $chroma));
+        $a2: vp-tone.from-hue-and-chroma($hue, 16);
+        $a3: vp-tone.from-hue-and-chroma($hue + 60, 24);
+        $n1: vp-tone.from-hue-and-chroma($hue, 4);
+        $n2: vp-tone.from-hue-and-chroma($hue, 8);
+    }
+    $error: vp-tone.from-hue-and-chroma(25, 84);
+
+    @return (
+        a1: $a1,
+        a2: $a2,
+        a3: $a3,
+        n1: $n1,
+        n2: $n2,
+        error: $error
+    );
+}

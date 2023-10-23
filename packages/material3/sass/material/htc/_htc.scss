@@ -1,0 +1,44 @@
+@use 'sass:map';
+@use './cam16' as vp-cam16;
+@use './hct_solver.scss'  as vp-htc-solver;
+@use './util' as vp-util;
+
+$internalHue: 0;
+$internalChroma: 0;
+$internalTone: 0;
+
+@function from($hue, $chroma, $tone) {
+  $solver: vp-htc-solver.solve-to-int($hue, $chroma, $tone);
+
+  @return htc($solver);
+}
+
+///  @param $argb ARGB representation of a color.
+///  @return HCT representation of a color in default viewing conditions
+@function from-int($argb) {
+  @return htc($argb);
+}
+
+///  @param $htc HCT representation of a color in default viewing conditions
+///  @return argb ARGB representation of a color.
+@function to-int($htc) {
+  @return map.get($htc, argb);
+}
+
+// constructor
+/// @param $argb ARGB representation of a color.
+/// @return HCT representation of a color in default viewing conditions
+@function htc($argb) {
+  $cam: vp-cam16.from-int($argb);
+  $internalHue: map.get($cam, hue);
+  $internalChroma: map.get($cam, chroma);
+  $internalTone: vp-util.lstar-from-argb($argb);
+  $htc: (
+    internalHue: $internalHue,
+    internalChroma: $internalChroma,
+    internalTone: $internalTone,
+    argb: $argb,
+  );
+
+  @return $htc;
+}

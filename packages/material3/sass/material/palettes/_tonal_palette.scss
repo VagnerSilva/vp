@@ -1,0 +1,148 @@
+@use 'sass:map';
+@use 'sass:math';
+@use '../htc' as vp-htc;
+@use './util' as vp-util;
+
+$cache: ();
+
+/// Calculate a tonal palette based on hue and chroma.
+/// @param $hue - The hue value.
+/// @param $chroma - The chroma value.
+/// @return - A map representing the tonal palette.
+@function from-hue-and-chroma($hue, $chroma) {
+
+    @return tonal-palette($hue, $chroma, create-key-color($hue, $chroma));
+}
+
+/// Calculate a tonal palette.
+/// @param $hue - The hue value.
+/// @param $chroma - The chroma value.
+/// @param $keyColor - The key color.
+/// @return - A map representing the tonal palette.
+@function tonal-palette($hue, $chroma, $keyColor) {
+    @return (
+        hue: $hue,
+        chroma: $chroma,
+        keyColor: $keyColor
+    );
+}
+
+/// Create a key color based on hue and chroma.
+/// @param $hue - The hue value.
+/// @param $chroma - The chroma value.
+/// @return - The key color.
+@function create-key-color($hue, $chroma) {
+   
+    $startTone: 50;
+    $smallestDeltaHct: vp-htc.from($hue, $chroma, $startTone);
+    $smallestDeltaChroma: map.get($smallestDeltaHct, internalChroma);
+    $smallestDelta: math.abs($smallestDeltaChroma - $chroma);
+
+    
+    @for $delta from 1 through 49 {
+        $smallestDeltaChroma: map.get($smallestDeltaHct, internalChroma);
+
+        @if(math.round($chroma) == math.round($smallestDeltaChroma)) {
+            @return $smallestDeltaHct;
+        }
+        
+        $hctAdd: vp-htc.from($hue, $chroma, $startTone + $delta);
+        $hctAddChroma: map.get($hctAdd, internalChroma);
+
+        $hctAddDelta: math.abs($hctAddChroma - $chroma);
+
+        @if($hctAddDelta < $smallestDelta) {
+            $smallestDelta: $hctAddDelta;
+            $smallestDeltaHct: $hctAdd;
+        }
+
+        $hctSubtract: vp-htc.from($hue, $chroma, $startTone - $delta);
+        $hctSubtractChroma: map.get($hctSubtract, internalChroma);
+        $hctSubtractDelta: math.abs($hctSubtractChroma - $chroma);
+        
+
+        @if($hctSubtractDelta < $smallestDelta) {
+            $smallestDelta: $hctSubtractDelta;
+            $smallestDeltaHct: $hctSubtract;
+        }
+    }
+
+    @return $smallestDeltaHct;
+}
+
+/// Calculate a tone based on a core component and a tone value.
+/// @param $coreComponent - The core component map.
+/// @param $tone - The tone value (between 0 and 100).
+/// @return - The ARGB color value for the tone.
+@function tone($coreComponent, $tone) {
+    @if($tone < 0 or $tone > 100) {
+      @error 'Tone must be between 0 and 100';
+    }
+    $argb: map.get($cache, $tone);
+
+    @if ($argb == null) {
+      $hue: map.get($coreComponent, hue);
+
+      @if not $hue { $hue:  map.get($coreComponent, internalHue); }
+
+      $chroma: map.get($coreComponent, chroma);
+      
+      @if not $chroma { $chroma: map.get($coreComponent, internalChroma); }
+
+
+      $argb: vp-htc.to-int(vp-htc.from($hue, $chroma, $tone));
+      $cache: map.merge($cache, ($tone: $argb));
+    }
+  
+    @return $argb;
+}
+
+/// Generate custom tones for a given color and palette.
+/// @param $colorName - The name of the color.
+/// @param $palette - The palette map.
+/// @param $type - The type of tones ('light' or 'dark').
+/// @param $fixed - Boolean indicating if fixed tones are included.
+/// @return - A map representing custom tones for the given color.
+@function custom-tones($colorName, $palette, $type: 'light', $fixed: false) {
+
+    $color: $colorName;
+    $onColor: 'on#{vp-util.first-upper($color)}';
+    $colorContainer: '#{$color}Container';
+    $onColorContainer: 'on#{vp-util.first-upper($color)}Container';
+
+    
+    $tones: map.get($palette, a1);
+    $tone1: if($type == 'dark', 80, 40);
+    $tone2: if($type == 'dark', 20, 100);
+    $tone3: if($type == 'dark', 30, 90);
+    $tone4: if($type == 'dark', 90, 10);
+
+    $custom: (
+        #{$color}: tone($tones, $tone1),
+        #{$onColor}: tone($tones, $tone2),
+        #{$colorContainer}: tone($tones, $tone3),
+        #{$onColorContainer}: tone($tones, $tone4)
+    );
+
+    @if $fixed and $color != 'error' {
+        $colorFixed: '#{$color}Fixed';
+        $onFixed: 'on#{vp-util.first-upper($color)}Fixed';
+        $fixedDim: '#{$color}FixedDim';
+        $onFixedVariant: 'on#{vp-util.first-upper($color)}FixedVariant';
+        $tone5: 90;
+        $tone6: 10;
+        $tone7: 80;
+        $tone8: 30;
+
+        $customFixed: (
+            #{$colorFixed}: tone($tones, $tone5),
+            #{$onFixed}: tone($tones, $tone6),
+            #{$fixedDim}: tone($tones, $tone7),
+            #{$onFixedVariant}: tone($tones, $tone8)
+        );
+
+        @return map.merge($custom, $customFixed);
+    }
+
+    @return $custom;
+}

@@ -1,0 +1,225 @@
+
+@use 'sass:math';
+@use 'sass:map';
+@use './math_util' as vp-math;
+
+// Define the white point D65 as a tuple.
+$WHITE_POINT_D65: (95.047, 100, 108.883);
+
+// Define the transformation matrix from sRGB to XYZ color space as a nested list.
+$SRGB_TO_XYZ: (
+  (0.41233895, 0.35762064, 0.18051042),
+  (0.2126, 0.7152, 0.0722),
+  (0.01932141, 0.11916382, 0.95034478),
+);
+
+// Calculate the alpha component from an ARGB color value.
+/// @param {number} $argb - ARGB color value
+/// @return {number} - Alpha component
+@function alpha-from-argb($argb) {
+  @return math.floor(math.div($argb, 16777216) % 256);
+}
+
+
+// Calculate the red component from an ARGB color value.
+/// @param {number} $argb - ARGB color value
+/// @return {number} - Red component
+@function red-from-argb($argb) {
+  @return math.floor(math.div($argb, 65536) % 256);
+}
+
+// Calculate the green component from an ARGB color value.
+/// @param {number} $argb - ARGB color value
+/// @return {number} - Green component
+@function green-from-argb($argb) {
+  @return math.floor(math.div($argb, 256) % 256);
+}
+
+// Calculate the blue component from an ARGB color value.
+/// @param {number} $argb - ARGB color value
+/// @return {number} - Blue component
+@function blue-from-argb($argb) {
+  @return math.floor($argb % 256);
+}
+
+/// Check if a color is opaque (alpha value >= 255).
+/// @param $color - The color in ARGB format.
+/// @return - `true` if the color is opaque, `false` otherwise.
+@function is-opaque($color) {
+  @return math.floor(math.div($color, 16777216) % 256) >= 255;
+}
+
+/// Get the white point for D65 illuminant.
+/// @return - The white point for D65 illuminant.
+@function whitePointD65() {
+    @return $WHITE_POINT_D65;
+}
+
+
+/// Inverse of the LAB color space transfer function.
+/// @param $ft - The input value.
+/// @return - The result of the inverse function.
+@function lab-invf($ft) {
+  $e: math.div(216, 24389);
+  $kappa: math.div(24389, 27);
+  $ft3: $ft * $ft * $ft;
+  
+  @if $ft3 > $e {
+    @return $ft3;
+  }
+
+ @else {
+    @return math.div((116 * $ft - 16), $kappa);
+  }
+}
+
+
+/// Calculate the Y component from L* in the LAB color space.
+/// @param $lstar - L* value.
+/// @return - The Y value.
+@function y-from-lstar($lstar) {
+  $labInvfInput: math.div(($lstar + 16), 116);
+  $labInvfResult: lab-invf($labInvfInput);
+  $yValue: 100 * $labInvfResult;
+  
+  @return $yValue;
+}
+
+/// Convert an RGB component to its linearized form.
+/// @param $rgbComponent - The RGB component (0-255).
+/// @return - The linearized value as a percentage.
+@function linearized($rgbComponent) {
+  $normalized: math.div(math.floor($rgbComponent), 255);
+
+  @if ($normalized <= 0.040449936) {
+    @return math.div($normalized, 12.92) * 100;
+  }
+
+  @return math.pow(math.div(($normalized + 0.055), 1.055), 2.4) * 100;
+}
+
+/// Calculate L* value from an ARGB color.
+/// @param $argb - The color in ARGB format.
+/// @return - The L* value.
+@function lstar-from-argb($argb) {
+  $xyz: xyz-from-argb($argb);
+  $y: nth($xyz, 2);
+
+  @return 116 * lab-f(math.div($y, 100)) - 16;
+}
+
+
+/// Calculate the LAB color space transfer function.
+/// @param $f - The input value.
+/// @return - The result of the function.
+@function lab-f($f) {
+  $e: math.div(216, 24389);
+  $kappa: math.div(24389, 27);
+
+  @if($f > $e) {
+      @return math.pow($f, math.div(1, 3));
+  }
+
+  @else {
+      @return math.div(($kappa * $f + 16), 116);
+  }
+}
+
+
+/// Convert an ARGB color to the XYZ color space.
+/// @param $argb - The color in ARGB format.
+/// @return - The color in the XYZ color space.
+@function xyz-from-argb($argb) {
+  $r: linearized(red-from-argb($argb));
+  $g: linearized(green-from-argb($argb));
+  $b: linearized(blue-from-argb($argb));
+
+
+  @return vp-math.matrix-multiply(($r, $g, $b), $SRGB_TO_XYZ);
+}
+
+/// Convert a linear RGB component to its delinearized form.
+/// @param $rgbComponent - The linear RGB component as a percentage.
+/// @return - The delinearized RGB component (0-255).
+@function delinearized($rgbComponent) {
+  $normalized: math.div($rgbComponent, 100);
+  $delinearized: 0;
+
+  @if($normalized <= 0.0031308) {
+    $delinearized: 12.92 * $normalized;
+  }
+
+ @else {
+    $delinearized: 1.055 * math.pow($normalized, math.div(1, 2.4)) - 0.055;
+  }
+
+  @return vp-math.clamp-int(0, 255, math.round($delinearized * 255));
+}
+
+/// Convert L* to ARGB color.
+/// @param $lstar - The L* value.
+/// @return - The ARGB color.
+@function argb-from-lstar($lstar) {
+  $y: y-from-lstar($lstar);
+  $component: delinearized($y);
+
+  @return argb-from-rgb($component, $component, $component);
+}
+
+/// Clamp a component value to be within the range [0, 255].
+/// @param $value - The input value.
+/// @return - The clamped value.
+@function clamp-component($value) {
+  @if ($value < 0) {
+    @return 0;
+  }
+
+  @if ($value > 255) {
+    @return 255;
+  }
+
+  @return $value;
+}
+
+/// Convert RGBA color to ARGB color.
+/// @param $rgba - The RGBA color as a map (e.g., (r: 255, g: 0, b: 0, a: 0.5)).
+/// @return - The ARGB color.
+@function argb-from-rgba($rgba: ()) {
+  $r: map.get($rgba, r);
+  $g: map.get($rgba, g);
+  $b: map.get($rgba, b);
+  $a: map.get($rgba, a);
+
+  $rValue: clamp-component(math.floor($r));
+  $gValue: clamp-component(math.floor($g));
+  $bValue: clamp-component(math.floor($b));
+  $aValue: clamp-component(math.floor($a));
+  $argb: ($aValue * 16777216) + ($rValue * 65536) + ($gValue * 256) + $bValue;
+
+  @return $argb;
+
+}
+
+/// Convert a linear RGB color to ARGB color.
+/// @param $linrgb - The linear RGB color as a list [r, g, b].
+/// @return - The ARGB color.
+@function argb-from-linrgb($linrgb) {
+  $r: delinearized(nth($linrgb, 1));
+  $g: delinearized(nth($linrgb, 2));
+  $b: delinearized(nth($linrgb, 3));
+
+  $result: argb-from-rgb($r, $g, $b);
+
+  @return  $result;
+}
+
+/// Convert an RGB color to ARGB format.
+/// @param $r - The red component (0-255).
+/// @param $g - The green component (0-255).
+/// @param $b - The blue component (0-255).
+/// @return - The ARGB color.
+@function argb-from-rgb($r, $g, $b) {
+  $argb: ((255 * 16777216) + ($r * 65536) + ($g * 256) + $b);
+
+  @return $argb;
+}

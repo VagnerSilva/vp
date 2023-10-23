@@ -1,0 +1,270 @@
+@use 'sass:math';
+@use './color_util' as vp-util;
+
+
+/// Replace `$search` with `$replace` in `$string`
+/// @param {String} $string - Initial string
+/// @param {String} $search - Substring to replace
+/// @param {String} $replace ('') - New value
+/// @return {String} - Updated string
+@function str-replace($string, $search, $replace: '') {
+    $index: str-index($string, $search);
+  
+    @if $index {
+      @return str-slice($string, 1, $index - 1) + $replace + 
+      str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    }
+  
+    @return $string;
+}
+
+
+/// Checks if a string is a valid hexadecimal color.
+/// @param {String} $color - The string to be checked.
+/// @return {Boolean} true if the string is a valid hexadecimal color, otherwise false.
+@function is-valid-hex-color($color) {
+  @if type-of($color) != 'string' {
+    @return false;
+  }
+
+  @if str-index($color, '#') == 1 {
+    $hex: str-slice($color, 2);
+    $validChars: '0123456789ABCDEFabcdef';
+    $isValid: true;
+    
+    @for $i from 1 through str-length($hex) {
+      $char: str-slice($hex, $i, $i);
+
+      @if not str-index($validChars, $char) {
+        $isValid: false;
+      }
+    }
+    
+    @return $isValid and (str-length($hex) == 6 or str-length($hex) == 3);
+  }
+
+  @else {
+    @return false;
+  }
+}
+
+
+/// Checks if a property name exists in the map.
+///
+/// @param $propertyName - The name of the property to check.
+/// @return {bool} - True if the property exists in the map, otherwise false.
+@function propertyExists($propertyName) {
+  @if map-has-key($myMap, $propertyName) {
+    @return true;
+  }
+
+  @else {
+    @return false;
+  }
+}
+
+  
+/// Convert a decimal value to a hex value
+/// @param {number} $value 
+/// @return {string} - hex
+@function decimal-to-hex($value) {
+    $hexChars: '0123456789abcdef';
+  
+    $firstDigit: math.floor(math.div($value, 16)) + 1;
+    $secondDigit: math.floor($value % 16) + 1;
+  
+    @return unquote(
+      str-slice($hexChars, $firstDigit, $firstDigit) +
+        str-slice($hexChars, $secondDigit, $secondDigit)
+    );
+}
+
+/// Convert a hex value to a decimal
+/// @param {string} $hex -
+/// @return {number} -decimal
+@function hex-to-decimal($hex) {
+    $decimal: 0;
+    $hexChars: '0123456789ABCDEF';
+  
+    @for $i from str-length($hex) through 1 {
+      $char: str-slice(to-upper-case($hex), $i, $i);
+      $digit: str-index($hexChars, $char);
+      $exponent: str-length($hex) - $i;
+      $power: math.pow(16, $exponent);
+      $decimal: $decimal + ($digit - 1) * $power;
+    }
+  
+    @return $decimal;
+  }
+
+/// Remove the unit from a number if it has one.
+/// @param $number - The input number (with or without a unit).
+/// @return - The input number without a unit, or the original value if it's not a number with a unit.
+  @function strip-unit($number) {
+    @if type-of($number) == 'number' and not unitless($number) {
+      @return math.div($number, ($number * 0 + 1));
+    }
+  
+    @return $number;
+  }
+  
+/// Convert a hexadecimal color code to an ARGB color representation.
+/// @param $hex - The hexadecimal color code (e.g., #RRGGBB or #AARRGGBB).
+/// @return - The ARGB color representation as a number.
+  @function argb-from-hex($hex) {
+    @if not is-valid-hex-color($hex) {
+      @error 'Invalid hex color ' + $hex;
+    }
+    
+    $h: str-replace($hex, '#', '');
+    $is-three: str-length($h) == 3;
+    $is-six: str-length($h) == 6;
+    $is-eight: str-length($h) == 8;
+    $r: 0;
+    $g: 0;
+    $b: 0;
+  
+    @if (not $is-three and not $is-six and not $is-eight) {
+      @error 'unexpected hex ' + $hex;
+    }
+  
+    @if $is-three {
+      $r: str-slice($h, 1, 1) + str-slice($h, 1, 1);
+      $g: str-slice($h, 2, 2) + str-slice($h, 2, 2);
+      $b: str-slice($h, 3, 3) + str-slice($h, 3, 3);
+    }
+  
+   @else if $is-six or $is-eight {
+      $r: str-slice($h, 1, 2);
+      $g: str-slice($h, 3, 4);
+      $b: str-slice($h, 5, 6);
+    }
+  
+    $r: hex-to-decimal($r);
+    $g: hex-to-decimal($g);
+    $b: hex-to-decimal($b);
+  
+    $argb: vp-util.argb-from-rgb($r, $g, $b);
+    
+    @return $argb;
+  }
+
+
+/// Convert argb to hex
+/// @param {type} $argb - argb number 4294452486
+/// @return {type} - hex #f82506
+@function hex-from-argb($argb) {
+  $r: vp-util.red-from-argb($argb);
+  $g: vp-util.green-from-argb($argb);
+  $b: vp-util.blue-from-argb($argb);
+
+  $outParts: ($r, $g, $b);
+  
+  @for $i from 1 through 3 {
+    $part: nth($outParts, $i);
+
+    @if $part < 10 {
+      $outParts: set-nth($outParts, $i, '0' + $part);
+    }
+
+ @else {
+      $outParts: set-nth($outParts, $i, decimal-to-hex($part));
+    }
+  }
+
+  @return '#' + nth($outParts, 1) + nth($outParts, 2) + nth($outParts, 3);
+}
+
+/// Capitalize the first letter of a string.
+/// @param $str - The input string.
+/// @return - The input string with the first letter capitalized.
+@function first-upper($str) {
+  $first: to-upper-case(str-slice($str, 1, 1)) + str-slice($str, 2);
+
+  @return $first;
+}
+
+/// Convert a string to kebab-case.
+/// @param $str - The input string.
+/// @return - The input string converted to kebab-case.
+@function to-kebab-case($str) {
+  $result: '';
+
+  @for $i from 1 through str-length($str) {
+      $char: str-slice($str, $i, $i);
+      $numbers: '0123456789';
+
+      @if $char == to-upper-case($char) and $i > 1 and not str-index($numbers, $char) {
+          $result: #{$result}-#{to-lower-case($char)};
+      }
+
+      @else if str-index($numbers, $char) and 
+               not str-index($numbers, str-slice($str, $i - 1, $i - 1)) {
+          $result: #{$result}-#{to-lower-case($char)};
+      }
+
+      @else {
+          $result: #{$result}#{to-lower-case($char)};
+      }
+  }
+
+  @return $result;
+}
+
+/// Convert a hexadecimal color value to HSL (Hue, Saturation, Lightness) format.
+/// @param $hex - The hexadecimal color value.
+/// @return - The color represented in HSL format (e.g., "hsl(0, 100%, 50%)").
+@function hex-to-hsl($hex) {
+
+  $hex: str-slice($hex, 2);
+
+
+  $red: str-slice($hex, 1, 2);
+  $green: str-slice($hex, 3, 4);
+  $blue: str-slice($hex, 5, 6);
+
+
+  $red-decimal: hex-to-decimal('#{$red}');
+  $green-decimal: hex-to-decimal('#{$green}');
+  $blue-decimal: hex-to-decimal('#{$blue}');
+
+  // Normalize os valores para a faixa de 0 a 1
+  $red-normalized: math.div($red-decimal, 255);
+  $green-normalized: math.div($green-decimal, 255);
+  $blue-normalized: math.div($blue-decimal, 255);
+
+  // Calcule o valor máximo e mínimo para encontrar a luminosidade (Lightness)
+  $max: math.max($red-normalized, $green-normalized, $blue-normalized);
+  $min: math.min($red-normalized, $green-normalized, $blue-normalized);
+
+  // Calcule a saturação (Saturation)
+  $delta: $max - $min;
+  $luminance: math.div(($max + $min), 2);
+  $saturation: if($delta == 0, 0, if($luminance < 0.5, 
+                  math.div($delta, ($max + $min)),
+                  math.div($delta, (2 - $max - $min))));
+
+  $hue: 0;
+
+  @if $delta != 0 {
+    @if $max == $red-normalized {
+      $hue: math.div(($green-normalized - $blue-normalized), $delta) + 
+      if($green-normalized < $blue-normalized, 6, 0);
+    }
+
+ @else if $max == $green-normalized {
+      $hue: math.div(($blue-normalized - $red-normalized), $delta) + 2;
+    }
+
+ @else {
+      $hue: math.div(($red-normalized - $green-normalized), $delta) + 4;
+    }
+  }
+
+
+  $hue: $hue * 60;
+
+  $hue: if($hue < 0, $hue + 360, if($hue >= 360, $hue - 360, $hue));
+
+  @return 'hsl(#{$hue}, #{$saturation * 100}%, #{$luminance * 100}%)';
+}

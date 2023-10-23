@@ -1,0 +1,106 @@
+@use 'sass:map';
+@use './util' as vp-util;
+@use '../material' as vp-material;
+
+
+/// Create a custom theme with the given parameters.
+/// This function generates a custom theme palette based on the provided color
+/// and source. It returns a map with 'light' and 'dark' schemes.
+/// @param {String} $name - The name of the custom theme.
+/// @param {String} $color - The base color in hexadecimal format.
+/// @param {String} $source - The source color in hexadecimal format.
+/// @return {Map} - A map containing 'light' and 'dark' schemes.
+@function _create-custom-theme($name, $color,  $source) {
+  @if $color {
+    $color: vp-util.argb-from-hex($color);
+    $palette: vp-material.of(vp-material.harmonize($color, $source));
+
+    @return (schemes: ( 
+      light: vp-material.custom-tones($name, $palette, 'light', true),
+      dark:  vp-material.custom-tones($name, $palette, 'dark', true)
+    ));
+  }
+  
+  @else {
+    @return false;
+  }
+}
+
+
+/// Get a palette color of a specific type from a given palette color.
+/// This function returns the color of the specified type from a given palette color.
+/// @param {String} $paletteColor - The base palette color in hexadecimal format.
+/// @param {String} $type - The type of the color to retrieve (e.g., 'a1').
+/// @return {Color} - The color of the specified type.
+@function _get-palette($paletteColor, $type: a1) {
+
+  @if $paletteColor {
+
+    @return map.get(vp-material.of(vp-util.argb-from-hex($paletteColor)), $type);
+  }
+
+  @else {
+
+    @return false;
+  }
+}
+
+/// Set themes based on the provided theme object.
+/// This mixin sets various themes based on the provided theme object. It
+/// retrieves colors from the theme object and generates custom themes.
+/// @param {Map} $theme - The theme object containing color definitions.
+@mixin themes($theme) {
+
+  $primary: map.get($theme, primary);
+  $secondary: map.get($theme, secondary);
+  $tertiary: map.get($theme, tertiary);
+  $neutral: map.get($theme, neutral);
+  $error: map.get($theme, error);
+  $custom: map.get($theme, customColors);
+  $source: vp-util.argb-from-hex($primary);
+  $themes: vp-util.theme-from-source-color($source, $custom);
+  $palettes: (
+    secondary: _get-palette($secondary),
+    tertiary: _get-palette($tertiary),
+    neutral:  _get-palette($neutral),
+    neutralVariant: _get-palette($neutral, a2),
+    error: _get-palette($error)
+  );
+
+  $customSecondary: _create-custom-theme('secondary', $secondary, $source);
+  $customTertiary: _create-custom-theme('tertiary', $tertiary, $source);
+  $customNeutral: _create-custom-theme('neutral', $neutral, $source);
+  $customError: _create-custom-theme('error', $error, $source);
+  
+  $customThemes: (
+    $customSecondary,
+    $customTertiary,
+    $customNeutral,
+    $customError
+  );
+
+
+  @each $customTheme in $customThemes {
+    @if $customTheme {
+      $light: map.get($customTheme, schemes, light);
+      $dark:  map.get($customTheme, schemes, dark);
+      $themes: map.merge($themes, (schemes: (
+        light: map.merge(map.get($themes, schemes, light), $light),
+        dark: map.merge(map.get($themes, schemes, dark), $dark)
+      )));
+    }
+  }
+
+ 
+  @each $key, $value in $palettes {
+    @if $value {
+      $themes: map.merge($themes, (palettes: map.merge(map.get($themes, palettes), ($key: $value))));
+    }
+  }
+
+  @include vp-util.apply-theme($themes, (
+    target: body,
+    paletteTones: true,
+  ));
+
+}

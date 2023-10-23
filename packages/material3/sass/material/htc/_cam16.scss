@@ -1,0 +1,116 @@
+@use 'sass:math';
+@use 'sass:map';
+@use './viewing_conditions' as vp-vc;
+@use './util' as vp-util;
+
+
+/// @param argb ARGB representation of a color.
+/// @return CAM16 color.
+@function from-int($argb) {
+      $default:  vp-vc.make();
+
+      @return from-int-in-viewing-conditions($argb, $default);
+}
+
+/// @param argb ARGB representation of a color.
+/// @param viewingConditions Information about the environment
+///  where the color was observed.
+/// @return CAM16 color.
+@function from-int-in-viewing-conditions($argb, $viewingConditions) {
+    $r: math.floor(math.div($argb, 65536) % 256);
+    $g: math.floor(math.div($argb, 256) % 256);
+    $b: math.floor($argb % 256);
+  
+    $rl: vp-util.linearized($r);
+    $gl: vp-util.linearized($g);
+    $bl: vp-util.linearized($b);
+
+    $x: 0.41233895 * $rl + 0.35762064 * $gl + 0.18051042 * $bl;
+    $y: 0.2126 * $rl + 0.7152 * $gl + 0.0722 * $bl;
+    $z: 0.01932141 * $rl + 0.11916382 * $gl + 0.95034478 * $bl;
+  
+    $rC: 0.401288 * $x + 0.650173 * $y - 0.051461 * $z;
+    $gC: -0.250268 * $x + 1.204414 * $y + 0.045854 * $z;
+    $bC: -0.002079 * $x + 0.048952 * $y + 0.953127 * $z;
+  
+    $vcRgbD: map.get($viewingConditions, rgbD);
+    $rD: nth($vcRgbD, 1) * $rC;
+    $gD: nth($vcRgbD, 2) * $gC;
+    $bD: nth($vcRgbD, 3) * $bC;
+    
+    $vcFl: map.get($viewingConditions, fl);
+    $rAF: math.pow(math.div(($vcFl * math.abs($rD)), 100), 0.42);
+    $gAF: math.pow(math.div(($vcFl * math.abs($gD)), 100), 0.42);
+    $bAF: math.pow(math.div(($vcFl * math.abs($bD)), 100), 0.42);
+  
+    $rA: math.div((vp-util.signum($rD) * 400 * $rAF), ($rAF + 27.13));
+    $gA: math.div((vp-util.signum($gD) * 400 * $gAF), ($gAF + 27.13));
+    $bA: math.div((vp-util.signum($bD) * 400 * $bAF), ($bAF + 27.13));
+  
+    $a : math.div((11 * $rA + -12 * $gA + $bA), 11);
+    $b : math.div(($rA + $gA - 2 * $bA), 9);
+    $u : math.div((20 * $rA + 20 * $gA + 21 * $bA), 20);
+    $p2: math.div((40 * $rA + 20 * $gA + $bA), 20);
+  
+     // hue
+    $atan2:  math.atan2($b, $a);
+    $atanDegrees: vp-util.strip-unit($atan2);
+    $hue: if($atanDegrees < 0, $atanDegrees + 360, 
+          if($atanDegrees >= 360, $atanDegrees - 360, $atanDegrees));
+    $hueRadians: $hue * math.div(math.$pi, 180);
+  
+    $vcNbb: map.get($viewingConditions, nbb);
+    $vcAw: map.get($viewingConditions, aw);
+    $vcC: map.get($viewingConditions, c);
+    $vcZ: map.get($viewingConditions, z);
+    $vcFLRoot: map.get($viewingConditions, fLRoot);
+    $vcNc: map.get($viewingConditions, nc);
+    $vcNcb: map.get($viewingConditions, ncb);
+    $vcN: map.get($viewingConditions, n);
+    // achromatic response to color
+    $ac: $p2 * $vcNbb;
+  
+    // CAM16 lightness and brightness
+    $j: 100 *
+          math.pow(
+              math.div($ac, $vcAw),
+              $vcC * $vcZ);
+    $q: (math.div(4, $vcC)) * math.sqrt(math.div($j, 100)) *
+        ($vcAw + 4) * ($vcFLRoot);
+    $huePrime: if($hue < 20.14, $hue + 360, $hue);
+    $eHue:
+          0.25 * (math.cos(math.div(($huePrime * math.$pi), 180) + 2) + 3.8);
+    $p1:
+          math.div(50000, 13) * $eHue * $vcNc * $vcNcb;
+    $t: $p1 * math.div(math.sqrt($a * $a + $b * $b), ($u + 0.305));
+    $alpha: math.pow($t, 0.9) *
+          math.pow(1.64 - math.pow(0.29, $vcN), 0.73);
+  
+    // CAM16 chroma, colorfulness, chroma      
+    $c: $alpha * math.sqrt(math.div($j, 100));
+    $m: $c * $vcFLRoot;
+    $s: 50 *
+          math.sqrt(math.div(($alpha * $vcC), ($vcAw + 4)));
+  
+    // CAM16-UCS components
+    $jstar: math.div((1 + 100 * 0.007) * $j, (1 + 0.007 * $j));
+    $mstar: math.div(1, 0.0228) * math.log(1 + 0.0228 * $m);
+    $astar: $mstar * math.cos($hueRadians);
+    $bstar: $mstar * math.sin($hueRadians);
+
+    // CAM16
+
+    $cam16: (
+      hue: $hue, 
+      chroma: $c,
+      j: $j, 
+      q: $q, 
+      m: $m, 
+      s: $s, 
+      jstar: $jstar, 
+      astar: $astar,
+      bstar: $bstar
+    );
+
+    @return $cam16;
+}

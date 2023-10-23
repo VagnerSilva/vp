@@ -1,0 +1,235 @@
+@use 'sass:map';
+@use 'sass:list';
+@use 'sass:meta';
+
+@use '../material' as vp-material;
+
+@use './string_util' as vp-str;
+
+
+/// Validate specific property names and raise an error if found.
+$restrictedProperties: 'primary', 'secondary', 'tertiary', 'neutral', 'error';
+
+/// Generate a theme based on a source color and custom colors.
+///
+/// @param {Color} $source - The source color
+/// @param {Map} $customColors - Custom colors map
+/// @return {Map} - The generated theme
+@function theme-from-source-color($source, $customColors) {
+
+    @if vp-str.is-valid-hex-color($source) {
+        $source: vp-str.argb-from-hex($source);
+    }
+   
+    $palette: vp-material.of($source);
+
+    $primary: map.get($palette, a1);
+    $secondary: map.get($palette, a2);
+    $tertiary: map.get($palette, a3);
+    $neutral: map.get($palette, n1);
+    $neutralVariant: map.get($palette, n2);
+    $error: map.get($palette, error);
+    $light: vp-material.light($source);
+    $dark: vp-material.dark($source);
+    $custom: custom-colors-map($source, $customColors);
+
+    @return (
+        source: $source,
+        schemes: (
+            light: $light,
+            dark: $dark,
+        ),
+        palettes: (
+            primary: $primary,
+            secondary: $secondary,
+            tertiary: $tertiary,
+            neutral: $neutral,
+            neutralVariant: $neutralVariant,
+            error: $error,
+        ),
+        customColors: $custom
+    );
+}
+
+
+/// Generate a custom color based on a source and color definition.
+///
+/// @param {Color} $source - The source color
+/// @param {Map} $color - Color definition
+/// @return {Map} - The generated custom color
+@function custom-color($source, $color) {
+    $colorName: map.get($color, name);
+    $colorValue: vp-str.argb-from-hex(map.get($color, value));
+    $value: $colorValue;
+    $from: $value;
+    $to: $source;
+
+    @if(map.get($color, blend)) {
+        $value: vp-material.harmonize($from, $to);
+    }
+
+    $palette: vp-material.of($value);
+
+    @return (
+        color: $color,
+        value: $value,
+        light: vp-material.custom-tones($colorName, $palette, 'light'),
+        dark:  vp-material.custom-tones($colorName, $palette, 'dark')
+    );
+}
+
+/// Check if a map is empty.
+///
+/// @param {Map} $map - The map to check
+/// @return {Bool} - True if the map is empty, otherwise false
+@function is-map-empty($map) {
+    $empty: true;
+
+    @each $key, $value in $map {
+      $empty: false;
+    }
+
+    @return $empty;
+}
+
+/// Generate a map of custom colors based on a source color and custom color definitions.
+///
+/// @param {Color} $source - The source color
+/// @param {List/Map} $customColors - List or map of custom color definitions
+/// @return {Map} - The map of custom colors
+@function custom-colors-map($source, $customColors) {
+  $result: ();
+ 
+  @if meta.type-of($customColors) == map {
+    $customColors: list.append((), $customColors);
+  }
+
+  @each $color in $customColors {
+    @if not is-map-empty($color) {
+
+        $name: to-lower-case(map.get($color, name));
+
+        // Check for restricted property names
+        @each $property in $restrictedProperties {
+
+          @if $name == $property {
+            @error 'Invalid property name: #{$property}.' +
+                ' The following properties (#{$restrictedProperties}) are restricted for the name of custom colors.';
+          }
+        }
+
+        
+        $customColor: custom-color($source, $color);
+        $result: list.append($result, $customColor);
+    }
+  }
+
+  @return $result;
+}
+
+
+/// Set CSS custom properties for a color scheme.
+///
+/// @param {String} $target - The target selector
+/// @param {Map} $scheme - Color scheme map
+/// @param {String} $prefix ('') - Prefix for custom properties
+/// @param {String} $suffix ('') - Suffix for custom properties
+@mixin set-scheme-properties($target, $scheme,  $prefix: '', $suffix: '') {
+    $properties: ();
+
+    @each $key, $value in $scheme {
+      $color: vp-str.hex-from-argb($value);
+      $token: vp-str.to-kebab-case($key);
+      $prefix: if($prefix != '', vp-str.to-kebab-case($prefix) + '-', $prefix);
+      $suffix: if($suffix != '', '-' + vp-str.to-kebab-case($suffix), $suffix);
+
+      $properties: append($properties, (($prefix + $token + $suffix), ($color)));
+    }
+
+    #{$target} {
+        @each $key, $value in $properties {
+          --#{$key}: #{$value};
+        }
+    }
+   
+
+
+}
+
+
+/// Generate a map of palette tones based on a theme's palettes.
+///
+/// @param {Map} $theme - The theme map
+/// @param {List} $paletteTones - List of palette tones to generate
+/// @return {Map} - The generated palette tones
+@function palette-generator($theme, $paletteTones) {
+    $schemes: ();
+
+        @each $key, $palette in map.get($theme, palettes) {
+          $paletteKey:vp-str.to-kebab-case($key);
+      
+          @if not ($paletteKey == 'neutral-variant') {
+            @each $tone in $paletteTones {
+                $token: '#{$paletteKey}#{$tone}0';
+                $value: vp-material.tone($palette, 100 - $tone);
+                $color: $value;
+                $schemes: map.merge($schemes, ($token: $color));
+            }
+          }
+        }
+
+        @return $schemes;
+}
+
+
+/// Generate a custom color scheme based on custom color definitions.
+///
+/// @param {List} $customColors - List of custom color definitions
+/// @param {String} $target - Target scheme ('light' or 'dark')
+/// @param {Bool} $isDark - True for dark scheme, false for light scheme
+/// @return {Map} - The generated custom color scheme
+@function custom-generator($customColors, $target, $isDark) {
+    $properties: ();
+
+    @each $colors in $customColors {
+        $scheme: if($isDark, map-get($colors, 'dark'), 
+                map-get($colors, 'light'));
+        $properties: map.merge($properties, $scheme);
+    }
+
+    @return $properties;
+}
+
+
+/// Apply a theme to a target by setting CSS custom properties.
+///
+/// @param {Map} $theme - The theme map
+/// @param {Map} $options - Options for theme application
+@mixin apply-theme($theme, $options:()) {
+  
+
+
+    $target: map-get($options, 'target');
+    $isDark: map-get($options, 'dark');
+    $paletteTones: map-get($options, 'paletteTones');
+    $scheme: if($isDark, map-get($theme, 'schemes', 'dark'), 
+                map-get($theme, 'schemes', 'light'));
+    $customColors: map-get($theme, 'customColors');
+
+   
+
+    @if $paletteTones {
+        $paletteTones: (5, 10, 20, 30, 40, 50, 60, 70, 80, 90);
+        $palettes: palette-generator($theme, $paletteTones);
+        $scheme: map.merge($scheme, $palettes);
+    }
+
+   
+
+    @if $customColors {
+        $custom: custom-generator($customColors, $target, $isDark);
+        $scheme: map.merge($scheme, $custom);
+    }
+
+    @include set-scheme-properties($target, $scheme);
+}

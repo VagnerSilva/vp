@@ -1,0 +1,26 @@
+{
+  "name": "@vp/material3",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Vagner Silva",
+    "email": "vagner.silva@housix.dev"
+  },
+  "main": "sass/_index.scss",
+  "keywords": [
+    "sass",
+    "scss",
+    "material",
+    "design",
+    "colors",
+    "palette"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/VagnerSilva/vp.git",
+    "directory": "packages/material3"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

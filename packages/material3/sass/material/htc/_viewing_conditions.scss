@@ -1,0 +1,85 @@
+@use 'sass:math';
+@use 'sass:list';
+@use './util' as vp-util;
+
+/// @param $whitePoint White point, measured in the XYZ color space.
+///     default = D65, or sunny day afternoon
+/// @param $adaptingLuminance The luminance of the adapting field. Informally,
+///     how bright it is in the room where the color is viewed. Can be
+///     calculated from lux by multiplying lux by 0.0586. default = 11.72,
+///     or 200 lux.
+/// @param $backgroundLstar The lightness of the area surrounding the color.
+///     measured by L* in L*a*b*. default = 50.0
+/// @param $surround A general description of the lighting surrounding the
+///     color. 0 is pitch dark, like watching a movie in a theater. 1.0 is a
+///     dimly light room, like watching TV at home at night. 2.0 means there
+///     is no difference between the lighting on the color and around it.
+///     default = 2.0
+/// @param $discountingIlluminant Whether the eye accounts for the tint of the
+///     ambient lighting, such as knowing an apple is still red in green light.
+///     default = false, the eye does not perform this process on
+///       self-luminous objects like displays.
+@function make(
+$whitePoint: vp-util.whitePointD65(),
+$adaptingLuminance: math.div(200, math.$pi) * math.div(vp-util.y-from-lstar(50), 100),
+$backgroundLstar: 50,
+$surround: 2,
+$discountingIlluminant: false
+) {
+  $xyz: $whitePoint;
+  $x: list.nth($xyz, 1);
+  $y: list.nth($xyz, 2);
+  $z: list.nth($xyz, 3);
+  $rW: $x * 0.401288 +  $y * 0.650173 + $z * -0.051461;
+  $gW: $x * -0.250268 + $y * 1.204414 + $z * 0.045854;
+  $bW: $x * -0.002079 + $y * 0.048952 + $z * 0.953127;
+  $f: 0.8 + math.div($surround, 10);
+  $c: if($f >= 0.9, vp-util.lerp(0.59, 0.69, ($f - 0.9) * 10),  
+  vp-util.lerp(0.525, 0.59, ($f - 0.8) * 10));
+  $euler: 2.7182818284590452353602874713527;
+  $expValue: math.pow($euler, math.div((-$adaptingLuminance - 42), 92));
+  $d: if($discountingIlluminant, 1, $f * (1 - math.div(1, 3.6) * $expValue));
+  $d: if($d > 1, 1, if($d < 0, 0, $d));
+  $nc: $f;
+  $rgbD: (
+    $d * math.div(100, $rW) + 1 - $d,
+    $d * math.div(100, $gW) + 1 - $d,
+    $d * math.div(100, $bW) + 1 - $d,
+  );
+  $k: math.div(1, (5 * $adaptingLuminance + 1));
+  $k4: $k * $k * $k * $k;
+  $k4F: 1 - $k4;
+  $fl: $k4 * $adaptingLuminance +
+    0.1 * $k4F * $k4F * math.pow((5 * $adaptingLuminance), math.div(1, 3));
+  $n: math.div(vp-util.y-from-lstar($backgroundLstar), nth($whitePoint, 2));
+  $z: 1.48 + math.sqrt($n);
+  $nbb: math.div(0.725, math.pow($n, 0.2));
+  $ncb: $nbb;
+  $rgbAFactors: (
+    math.pow(math.div(($fl * nth($rgbD, 1) * $rW), 100), 0.42),
+    math.pow(math.div(($fl * nth($rgbD, 2) * $gW), 100), 0.42),
+    math.pow(math.div(($fl * nth($rgbD, 3) * $bW), 100), 0.42),
+  );
+  $rgbA: (
+    math.div((400 * nth($rgbAFactors, 1)), (nth($rgbAFactors, 1) + 27.13)),
+    math.div((400 * nth($rgbAFactors, 2)), (nth($rgbAFactors, 2) + 27.13)),
+    math.div((400 * nth($rgbAFactors, 3)), (nth($rgbAFactors, 3) + 27.13))
+  );
+  $aw: (2 * nth($rgbA, 1) + nth($rgbA, 2) + 0.05 * nth($rgbA, 3)) * $nbb;
+  $fLRoot: math.pow($fl, 0.25);
+
+  $viewing: (
+    n: $n, 
+    aw: $aw, 
+    nbb: $nbb, 
+    ncb: $ncb,
+    c: $c, 
+    nc: $nc, 
+    rgbD: $rgbD, 
+    fl: $fl, 
+    fLRoot: $fLRoot, 
+    z: $z
+  );
+
+  @return $viewing;
+}
