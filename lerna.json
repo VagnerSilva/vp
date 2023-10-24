@@ -5,10 +5,9 @@
     "command": {
         "publish": {
             "convetionalCommits": true,
-            "yes": true
-        },
-        "version": {
-            "message": "chore(release): publish %v"
+            "message": "chore(release): publish %v",
+            "allowBranch": "main"
+            
         }
     }
     
