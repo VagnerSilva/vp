@@ -1,7 +1,8 @@
 {
-  "name": "@vp/material3",
+  "name": "@vp-auto/material3",
   "version": "0.0.0",
   "license": "Apache-2.0",
+  "type": "commonjs",
   "author": {
     "name": "Vagner Silva",
     "email": "vagner.silva@housix.dev"
@@ -23,5 +24,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "gitHead": "ac298b95ca1762e5b96afc55317e97839c200232"
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/vp-auto"
+  }
 }

@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@vp/material-tailwind": ["packages/material-tailwind/src/index.ts"]
+      "@vp-auto/material-tailwind": ["packages/material-tailwind/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

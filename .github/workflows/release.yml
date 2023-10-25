@@ -1,17 +1,26 @@
 name: Release
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
 
 jobs:
   release:
-    if: github.event.pull_request.merged == true # Condition
     name: Release
+    permissions:
+      checks: read
+      contents: write # to be able to publish a GitHub release
+      id-token: write # to enable use of OIDC for npm provenance
+      statuses: write
+      packages: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set Up Node.js
@@ -26,14 +35,14 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/bun.lockb') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
       - name: Install Dependencies
-        run: bun install
+        run: yarn
       # - name: lint
       #   run: bun lint
       # - name: test
       #   run: bun test
-      - name: release
+      - name: Semantic Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
