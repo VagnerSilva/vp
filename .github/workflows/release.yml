@@ -35,9 +35,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-${{ hashFiles('**/bun.lockb') }}
       - name: Install Dependencies
-        run: yarn
+        run: bun install
       # - name: lint
       #   run: bun lint
       # - name: test
