@@ -1,13 +1,13 @@
 {
   "name": "@vp-auto/material3",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "license": "Apache-2.0",
-  "type": "commonjs",
   "author": {
     "name": "Vagner Silva",
     "email": "vagner.silva@housix.dev"
   },
   "main": "sass/_index.scss",
+  "type": "commonjs",
   "keywords": [
     "sass",
     "scss",
@@ -16,11 +16,15 @@
     "colors",
     "palette"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/VagnerSilva/vp.git",
     "directory": "packages/material3"
   },
+  
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

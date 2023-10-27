@@ -27,17 +27,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-      - name: Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
           path: node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/bun.lockb') }}
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
       - name: Install Dependencies
-        run: bun install
+        run: yarn
       # - name: lint
       #   run: bun lint
       # - name: test
@@ -46,4 +42,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: bun release
+        run: yarn release

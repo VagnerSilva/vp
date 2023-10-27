@@ -10,6 +10,9 @@
     "type": "git",
     "url": "https://github.com/VagnerSilva/vp.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepare": "husky install",
     "release": "multi-semantic-release"
