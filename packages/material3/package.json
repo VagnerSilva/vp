@@ -1,6 +1,6 @@
 {
   "name": "@vp-auto/material3",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "license": "Apache-2.0",
   "author": {
     "name": "Vagner Silva",
@@ -23,5 +23,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "http://registry.npmjs.org"
   }
 }
