@@ -27,5 +27,9 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org"
+  },
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/vp-auto"
   }
 }
