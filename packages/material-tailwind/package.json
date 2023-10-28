@@ -28,9 +28,5 @@
     "@nx/devkit": "16.10.0",
     "tslib": "^2.3.0"
   },
-  "generators": "./generators.json",
-  "funding": {
-    "type": "opencollective",
-    "url": "https://opencollective.com/vp-auto"
-  }
+  "generators": "./generators.json"
 }
