@@ -1,47 +1,49 @@
-# name: Release
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     branches:
-#       - main
+name: Release
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-# jobs:
-#   release:
-#     name: Release
-#     permissions:
-#       checks: read
-#       contents: write # to be able to publish a GitHub release
-#       id-token: write # to enable use of OIDC for npm provenance
-#       statuses: write
-#       packages: write
+jobs:
+  release:
+    name: Release
+    permissions:
+      checks: read
+      contents: write # to be able to publish a GitHub release
+      id-token: write # to enable use of OIDC for npm provenance
+      statuses: write
+      packages: write
 
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-#       # - name: Set Up Node.js
-#       #   uses: actions/setup-node@v3
-#       #   with:
-#       #     node-version: 18.x
-#       - name: Install bun
-#         uses: oven-sh/setup-bun@v1
-#       - name: Cache node_modules
-#         uses: actions/cache@v3
-#         with:
-#           path: node_modules
-#           key: ${{ runner.os }}-${{ hashFiles('bun.lockb') }}
-#       - name: Install Dependencies
-#         run: bun install
-#       # - name: lint
-#       #   run: bun lint
-#       # - name: test
-#       #   run: bun test
-#       - name: Semantic Release
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-#         run: bun release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # - name: Set Up Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 18.x
+      - name: Install bun
+        uses: oven-sh/setup-bun@v1
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ hashFiles('bun.lockb') }}
+      - name: Install Dependencies
+        run: bun install
+      # - name: lint
+      #   run: bun lint
+      # - name: test
+      #   run: bun test
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.GIT_NPM }}
+          NODE_AUTH_TOKEN: ${{ secrets.GIT_NPM }}
+        run: bun release
