@@ -29,6 +29,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",
     "@commitlint/config-conventional": "^18.0.0",
+    "@gr2m/semantic-release-npm-161": "^5.2.0-pull-161-4",
     "@nx/eslint-plugin": "16.10.0",
     "@nx/jest": "16.10.0",
     "@nx/js": "16.10.0",
@@ -71,8 +72,13 @@
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
+      [
+        "@gr2m/semantic-release-npm-161",
+        {
+          "registry": "https://npm.pkg.github.com/"
+        }
+      ],
       "@semantic-release/github",
-      "@semantic-release/npm", 
       [
         "@semantic-release/git",
         {

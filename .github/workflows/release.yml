@@ -23,17 +23,19 @@
 #         uses: actions/checkout@v4
 #         with:
 #           fetch-depth: 0
-#       - name: Set Up Node.js
-#         uses: actions/setup-node@v3
-#         with:
-#           node-version: 18.x
+#       # - name: Set Up Node.js
+#       #   uses: actions/setup-node@v3
+#       #   with:
+#       #     node-version: 18.x
+#       - name: Install bun
+#         uses: oven-sh/setup-bun@v1
 #       - name: Cache node_modules
 #         uses: actions/cache@v3
 #         with:
 #           path: node_modules
-#           key: ${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+#           key: ${{ runner.os }}-${{ hashFiles('bun.lockb') }}
 #       - name: Install Dependencies
-#         run: yarn
+#         run: bun install
 #       # - name: lint
 #       #   run: bun lint
 #       # - name: test
@@ -42,4 +44,4 @@
 #         env:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-#         run: yarn release
+#         run: bun release
