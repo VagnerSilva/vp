@@ -7,9 +7,9 @@ description: Material Design 3
 A library developed in Sass based on Google's Material Design 3
 
 ```sh
-npm install @vp-auto/material3
+npm install @vp-autox/material3
 ```
 
 ```sh
-yarn add @vp-auto/material3
+yarn add @vp-autox/material3
 ```

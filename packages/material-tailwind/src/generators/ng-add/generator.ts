@@ -3,7 +3,7 @@ import { Tree, addDependenciesToPackageJson, formatFiles } from '@nx/devkit';
 import { NgAddGeneratorSchema } from './schema';
 
 export async function ngAddGenerator(tree: Tree, options: NgAddGeneratorSchema) {
-  intro('Welcome to the @vp-auto/material-tailwind generator!');
+  intro('Welcome to the @vp-autox/material-tailwind generator!');
 
   const projectRoot = options.projectRoot;
 
