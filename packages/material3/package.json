@@ -6,7 +6,7 @@
     "name": "Vagner Silva",
     "email": "vagner.silva@housix.dev"
   },
-  "main": "sass/_index.scss",
+  "main": "./_index.scss",
   "type": "commonjs",
   "keywords": [
     "sass",
