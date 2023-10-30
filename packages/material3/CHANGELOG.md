@@ -1,3 +1,5 @@
+## @vp-autox/material3 [1.0.4](https://github.com/VagnerSilva/vp/compare/@vp-autox/material3@1.0.3...@vp-autox/material3@1.0.4) (2023-10-30)
+
 ## @vp-autox/material3 [1.0.3](https://github.com/VagnerSilva/vp/compare/@vp-autox/material3@1.0.2...@vp-autox/material3@1.0.3) (2023-10-30)
 
 
