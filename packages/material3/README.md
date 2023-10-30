@@ -40,11 +40,11 @@ $theme: (
     secondary: '#00344B', // optional
     tertiary: '#0ADAFE', // optional
     neutral: '#939094', // optional
-    error: '#B3261E' // optional
+    error: '#B3261E', // optional
     customColors: (  // optional
         (
-            name: 'info'
-            value: '#4F616E'
+            name: 'info',
+            value: '#4F616E',
             blend: true
         )
     )
@@ -53,3 +53,11 @@ $theme: (
 
 @include vp-autox.themes($theme);
 ```
+
+### Colors
+
+All classes are in the target 'body
+
+<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
