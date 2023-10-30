@@ -37,17 +37,12 @@ $theme: (
 
 $theme: (
   primary: '#0F62FE',
-  secondary: '#00344B',
-  // optional
-  tertiary: '#0ADAFE',
-  // optional
-  neutral: '#939094',
-  // optional
-  error: '#B3261E',
-  // optional
-  customColors:
+  secondary: '#00344B',// optional
+  tertiary: '#0ADAFE', // optional
+  neutral: '#939094', // optional
+  error: '#B3261E',// optional
+  customColors: // optional
     (
-      // optional
       (
           name: 'info',
           value: '#4F616E',
