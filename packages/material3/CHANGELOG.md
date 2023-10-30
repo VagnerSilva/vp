@@ -1,3 +1,10 @@
+## @vp-autox/material3 [1.0.3](https://github.com/VagnerSilva/vp/compare/@vp-autox/material3@1.0.2...@vp-autox/material3@1.0.3) (2023-10-30)
+
+
+### Bug Fixes
+
+* **material3:** include options in dark mode and target ([5532455](https://github.com/VagnerSilva/vp/commit/5532455e7125e4580271868b652bf8592e48c79a))
+
 ## @vp-autox/material3 [1.0.2](https://github.com/VagnerSilva/vp/compare/@vp-autox/material3@1.0.1...@vp-autox/material3@1.0.2) (2023-10-30)
 
 
