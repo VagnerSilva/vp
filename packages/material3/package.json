@@ -21,6 +21,7 @@
     "url": "https://github.com/VagnerSilva/vp.git",
     "directory": "packages/material3"
   },
+  "homepage": "https://github.com/VagnerSilva/vp/blob/main/packages/material3/README.md",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

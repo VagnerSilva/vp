@@ -61,7 +61,7 @@ $theme: (
 
 ### Colors
 
-All classes are in the target 'body' by default
+All variables are in the target 'body' by default
 
 <figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
