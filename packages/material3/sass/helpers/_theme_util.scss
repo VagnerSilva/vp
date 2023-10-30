@@ -104,6 +104,10 @@ $restrictedProperties: 'primary', 'secondary', 'tertiary', 'neutral', 'error';
     $customColors: list.append((), $customColors);
   }
 
+  @if not $customColors {
+    @return $result;
+  }
+
   @each $color in $customColors {
     @if not is-map-empty($color) {
 
