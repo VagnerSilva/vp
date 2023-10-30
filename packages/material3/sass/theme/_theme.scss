@@ -49,7 +49,7 @@
 /// This mixin sets various themes based on the provided theme object. It
 /// retrieves colors from the theme object and generates custom themes.
 /// @param {Map} $theme - The theme object containing color definitions.
-@mixin themes($theme) {
+@mixin themes($theme, $options: ()) {
 
   $primary: map.get($theme, primary);
   $secondary: map.get($theme, secondary);
@@ -98,9 +98,12 @@
     }
   }
 
-  @include vp-util.apply-theme($themes, (
-    target: body,
-    paletteTones: true,
-  ));
+  $options: (
+      target: if(map.get($options, target), map.get($options, target), body),
+      isDark: if(map.get($options, isDark), map.get($options, isDark), false),
+      paletteTones: true
+  );
+
+  @include vp-util.apply-theme($themes, $options);
 
 }

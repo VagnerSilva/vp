@@ -214,7 +214,7 @@ $restrictedProperties: 'primary', 'secondary', 'tertiary', 'neutral', 'error';
 
 
     $target: map-get($options, 'target');
-    $isDark: map-get($options, 'dark');
+    $isDark: map-get($options, 'isDark');
     $paletteTones: map-get($options, 'paletteTones');
     $scheme: if($isDark, map-get($theme, 'schemes', 'dark'), 
                 map-get($theme, 'schemes', 'light'));
