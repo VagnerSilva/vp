@@ -61,3 +61,11 @@ All classes are in the target 'body
 <figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+
+### TODO
+
+
+
+* Add property for dark mode
+* Add property for change default target
+
