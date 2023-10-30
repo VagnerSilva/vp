@@ -110,6 +110,13 @@ $cache: ();
     $colorContainer: '#{$color}Container';
     $onColorContainer: 'on#{vp-util.first-upper($color)}Container';
 
+    @if $color == 'secondary' {
+        $tones: map.get($palette, a2);
+    }
+
+    @if $color == 'tertiary' {
+        $tones: map.get($palette, a3);
+    }
     
     $tones: map.get($palette, a1);
     $tone1: if($type == 'dark', 80, 40);
