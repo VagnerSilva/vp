@@ -1,3 +1,11 @@
+## @vp-autox/material3 [1.0.2](https://github.com/VagnerSilva/vp/compare/@vp-autox/material3@1.0.1...@vp-autox/material3@1.0.2) (2023-10-30)
+
+
+### Bug Fixes
+
+* **material3:** empty custom color ([502d301](https://github.com/VagnerSilva/vp/commit/502d301bda49c8a0af9fe3b896550517983aab88))
+* **material3:** update tones for 'secondary' and 'tertiary' custom colors ([9c9ee7e](https://github.com/VagnerSilva/vp/commit/9c9ee7ecbf0281ee0b4f86123123b575a9b65033))
+
 ## @vp-autox/material3 [1.0.1](https://github.com/VagnerSilva/vp/compare/@vp-autox/material3@1.0.0...@vp-autox/material3@1.0.1) (2023-10-29)
 
 
